@@ -1,22 +1,19 @@
-from flask import Flask, render_template
-import time
-import random
+import streamlit as st
 
-app = Flask(__name__)
-
-
-# Interpolation Search
 def interpolation_search(arr, target):
     low, high = 0, len(arr) - 1
     comparisons = 0
 
-    while low <= high and arr[low] <= target <= arr[high]:
+    while low <= high and target >= arr[low] and target <= arr[high]:
         comparisons += 1
 
         if low == high:
             if arr[low] == target:
                 return low, comparisons
             return -1, comparisons
+
+        if arr[high] == arr[low]:
+            break
 
         pos = low + int(
             ((target - arr[low]) * (high - low))
@@ -32,73 +29,18 @@ def interpolation_search(arr, target):
 
     return -1, comparisons
 
+st.title("Interpolation Search")
 
-# Binary Search
-def binary_search(arr, target):
-    low, high = 0, len(arr) - 1
-    comparisons = 0
+numbers = st.text_input(
+    "Enter sorted numbers",
+    "2 5 10 15 23 35 48 60 75 90 105 120"
+)
 
-    while low <= high:
-        comparisons += 1
-        mid = (low + high) // 2
+target = st.number_input("Target", step=1, value=35)
 
-        if arr[mid] == target:
-            return mid, comparisons
-        elif arr[mid] < target:
-            low = mid + 1
-        else:
-            high = mid - 1
-
-    return -1, comparisons
-
-
-# Performance Analysis
-def performance_analysis():
-    sizes = [1000, 5000, 10000, 50000, 100000]
-    results = []
-
-    for size in sizes:
-        arr = sorted(random.sample(range(size * 10), size))
-        target = random.choice(arr)
-
-        start = time.perf_counter()
-        for _ in range(100):
-            _, comp_is = interpolation_search(arr, target)
-        is_time = (time.perf_counter() - start) / 100 * 1000
-
-        start = time.perf_counter()
-        for _ in range(100):
-            _, comp_bs = binary_search(arr, target)
-        bs_time = (time.perf_counter() - start) / 100 * 1000
-
-        results.append({
-            "size": size,
-            "is_time": round(is_time, 6),
-            "bs_time": round(bs_time, 6),
-            "is_comp": comp_is,
-            "bs_comp": comp_bs
-        })
-
-    return results
-
-
-@app.route("/")
-def home():
-    arr = [2, 5, 10, 15, 23, 35, 48, 60, 75, 90, 105, 120]
-    target = 35
-
+if st.button("Search"):
+    arr = list(map(int, numbers.split()))
     index, comparisons = interpolation_search(arr, target)
-    comparison = performance_analysis()
 
-    return render_template(
-        "index.html",
-        array=arr,
-        target=target,
-        index=index,
-        comparisons=comparisons,
-        comparison=comparison
-    )
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    st.write("Index:", index)
+    st.write("Comparisons:", comparisons)
